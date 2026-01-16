@@ -1,87 +1,91 @@
-# Attendance-Management-System-using-Facial-Recognition.
+# ?? Attendance Management System - Facial Recognition
 
-**Project Description**
+## ?? Project Overview
 
-The **Attendance Management System** leverages facial recognition technology to automate attendance tracking, ensuring **accuracy, efficiency, and authenticity**. By replacing traditional manual attendance methods, this system minimizes errors, prevents proxy attendance, and streamlines the process for educational institutions and workplaces.
+The **Attendance Management System** is a fully automated attendance tracking solution using real-time facial recognition technology. It eliminates manual attendance processes, prevents proxy attendance, and provides administrators with comprehensive attendance analytics and reporting.
 
-**Key Functionalities**
+**Status**: ? Production Ready | **Version**: 2.0 Enhanced
 
-1. **Face Registration**: Register and capture students’ or employees’ images.
-2. **Face Detection & Recognition**: Uses the **Viola-Jones algorithm** and **Local Binary Patterns** for accurate face detection and identification.
-3. **Attendance Logging**: Automatically marks attendance and stores it in a database with timestamps.
-4. **Report Generation**: Provides easy-to-access attendance reports.
+---
 
-Attendance Management System Using Face Recognition
-Overview
-This project provides an automated Attendance Management System using real-time facial recognition. By replacing traditional manual attendance methods with a tech-driven approach, this system ensures efficient, accurate, and authentic attendance tracking for educational institutions and workplaces.
+## ?? Key Features
 
-Features
-Facial Recognition: Automatically captures and verifies attendance via real-time face detection.
-User-Friendly GUI: Built with Tkinter, making it easy to interact and operate.
-Attendance Logs: Stores attendance data with timestamps for easy record-keeping.
-Image Storage: Captures and saves images of registered faces for training purposes.
-Real-Time Capture: Efficiently processes live video feed for face recognition.
+### ?? Security & Access Control
+- **Admin Login System**: Secure authentication with admin-only features
+- **Admin-Only Registration**: Only administrators can register new students
+- **Role-Based Access**: Different features for admin and regular users
+- **Secure Credentials**: Admin credentials managed through config.py
 
-Technologies Used
-Python: Core programming language.
-OpenCV: For face detection and recognition.
-Tkinter: For building the graphical user interface.
-Pandas: To manage and manipulate attendance data.
+### ?? Student Management
+- **Face Registration**: Capture **30 high-quality images** per student for optimal model training
+- **Enrollment ID & Details**: Store complete student information (ID, name, class)
+- **Efficient Training**: Optimized model training with reduced images for faster processing
 
-Installation & Setup
-
-Clone the Repository:
-git clone https://github.com/Pujitha-user/Attendance-Management-System.git
-
-
-Install Dependencies:
-pip install opencv-python-headless pandas tk
-
-
-Run the Application:
-python main_app.py
-
-   
-
- **Technologies**
-
-- **Python**
-- **OpenCV** (for image processing)
-- **Tkinter** (for GUI)
-- **Pandas** (for data handling)
-- **MySQL** (for database management)
+### ?? Attendance Marking
+- **Auto-Attendance Mode**: Continuous real-time face recognition
+  - Automatically recognizes students walking past the camera
+  - Displays personalized "Thank You, [Name]!" message on camera feed
+  - Auto-clears message after 2 seconds, continues scanning
+  - Press **Q key** only when completely done
+  - 100% hands-free operation
   
-- **File Structure**
-- 
-                ├── main_app.py          # Main application file
+- **Manual Attendance Mode**: Mark attendance manually for specific scenarios
+  - Batch attendance marking
+  - Excel/CSV export support
 
-                ├── train_model.py       # Script to train the face recognition model
+### ?? Analytics & Reporting
+- **Real-Time Dashboard**: View student count, marked attendance, pending students
+- **Attendance Reports**: Generate Excel files (.xlsx) with:
+  - Individual session sheets
+  - Summary sheet with complete records
+  - Professional formatting (bold headers, colors, auto-width columns)
+  - Timestamp and date information
 
-                ├── Attendance/          # Stores attendance CSV files
+### ????? Admin Features
+- **Admin Dashboard**: Central control panel for all operations
+- **User Analytics**: View attendance trends and statistics
+- **Report Download**: Export attendance as Excel workbooks
+- **Student Management**: Register new students (admin only)
+- **Model Training**: Train/retrain the facial recognition model
+- **System Logs**: Track all operations and errors
 
-                ├── TrainingImage/       # Stores captured images for training
+---
 
-                └── haarcascade_frontalface_default.xml  # Pre-trained Haar Cascade for face detection
+## ??? Technology Stack
 
+| Component | Technology |
+|-----------|-----------|
+| **Language** | Python 3.13 |
+| **GUI Framework** | Tkinter |
+| **Face Detection** | OpenCV (Viola-Jones Algorithm) |
+| **Face Recognition** | LBPH (Local Binary Patterns Histograms) |
+| **Data Storage** | CSV files |
+| **Data Processing** | Pandas |
+| **Image Processing** | OpenCV, Pillow |
+| **Excel Export** | openpyxl |
+| **Logging** | Custom logger |
 
-**How It Works**
+---
 
-1. **Capture**: Real-time image capture using a webcam.
-2. **Detect**: Identify faces using the **Viola-Jones algorithm**.
-3. **Recognize**: Match the detected face with the stored database using **Local Binary Patterns**.
-4. **Log**: Record attendance in the database with accurate timestamps.
+## ?? Requirements
 
- **Future Improvements**
+pip install -r requirements.txt
 
-- Integration of **deep learning models** for enhanced recognition accuracy.
-- Development of a **mobile app version** for convenient usage.
-- Implementing **cloud-based storage** for scalability and secure data management.
+---
 
- **Why This Project Matters**
+## ?? Quick Start
 
-This system addresses the limitations of traditional attendance methods by ensuring:
-- **Error Reduction**: Minimizes manual entry mistakes.
-- **Proxy Prevention**: Reduces fraudulent attendance marking.
-- **Efficiency**: Saves time and automates routine tasks.
+python main.py
 
-For any questions or issues, feel free to contact pujitha.puja.reddy@gmail.com
+---
+
+## ?? Admin Credentials
+
+Username: Heeralal
+Password: Heera@1234
+
+?? **IMPORTANT**: Change these credentials in config.py for production use!
+
+---
+
+**Last Updated**: January 2026 | **Status**: ? Production Ready

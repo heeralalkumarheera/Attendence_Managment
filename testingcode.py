@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
+from config import CASCADE_PATH, MODEL_PATH
 
-recognizer = cv2.face.LBPHFaceRecognizer()
-recognizer.read("C:\Attendance mgmt project\Trainner.yml")
-cascadePath = "C:\Attendance mgmt project\haarcascade_frontalface_default.xml"
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+recognizer.read(str(MODEL_PATH))
+cascadePath = str(CASCADE_PATH)
 faceCascade = cv2.CascadeClassifier(cascadePath)
 font = cv2.FONT_HERSHEY_SIMPLEX
 

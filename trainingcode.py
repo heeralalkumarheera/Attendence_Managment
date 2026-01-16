@@ -6,12 +6,12 @@ import os
 import numpy as np
 #importing image from the pillow library which specifically used to convert the images to greyscale. 
 from PIL import Image
+from config import CASCADE_PATH, MODEL_PATH, TRAINING_DIR
+
 #LBPHFaceRecognizer_create() LBPH is a alogorithm (Local Binary Patterns Histogram) is method used for face recognition which is located in face package of opencv library.
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 #CascadeClassifier is used for real object detection.
-#detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-#detector = cv2.CascadeClassifier(r'C:\Attendance mgmt project\haarcascade_frontalface_default.xml')
-detector = cv2.CascadeClassifier("C:\Attendance mgmt project\haarcascade_frontalface_default.xml")
+detector = cv2.CascadeClassifier(str(CASCADE_PATH))
 
 def getImagesAndLabels(path):
     # get the path of all the files in the folder
@@ -38,6 +38,6 @@ def getImagesAndLabels(path):
     return faceSamples, Ids
 
 
-faces, Ids = getImagesAndLabels('TrainingImage')
+faces, Ids = getImagesAndLabels(str(TRAINING_DIR))
 recognizer.train(faces, np.array(Ids))
-recognizer.save('TrainingImageLabel/trainner.yml')
+recognizer.save(str(MODEL_PATH))

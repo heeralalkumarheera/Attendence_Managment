@@ -1,3 +1,18 @@
+"""
+╔══════════════════════════════════════════════════════════════════╗
+║     ATTENDANCE MANAGEMENT SYSTEM - FACE RECOGNITION              ║
+║                                                                  ║
+║  📌 ADMIN CREDENTIALS CONFIGURATION                              ║
+║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ║
+║  To change admin username/password, go to Line 553-554           ║
+║  Search for: "# Admin Credentials - Change username"            ║
+║                                                                  ║
+║  Current Credentials:                                            ║
+║  Username: Heeralal                                              ║
+║  Password: Heera@1234                                            ║
+╚══════════════════════════════════════════════════════════════════╝
+"""
+
 import tkinter as tk
 #we use tkinter to create GUI (Graphical User Interface)
 from tkinter import *
@@ -9,13 +24,31 @@ from PIL import Image, ImageTk
 import pandas as pd
 import datetime
 import time
+from config import (
+    ADMIN_PASSWORD,
+    ADMIN_USERNAME,
+    ATTENDANCE_DIR,
+    CASCADE_PATH,
+    MODEL_PATH,
+    STUDENT_CSV,
+    TRAINING_DIR,
+    ensure_data_dirs,
+    ensure_student_csv,
+)
+from components.admin_panel import admin_panel as admin_panel_component
+from utils.validators import is_digit_input
+from utils.logger import log_info
+
+# Ensure required folders and base CSV exist
+ensure_data_dirs()
+ensure_student_csv()
+log_info("Main attendance UI started")
 
 # Window is our Main frame of system
 window = tk.Tk()
-window.title("Attendance Management System using Face Recognition")
-
-window.geometry('1280x720')
-window.configure(background='grey80')
+window.title("Attendance Management System - Face Recognition")
+window.state('zoomed')  # Maximize window
+window.configure(background='#1e3a5f')  # Modern dark blue background
 
 # GUI for manually fill attendance
 # Manual Attendance
@@ -167,7 +200,7 @@ def manually_fill():
             def create_csv():
                 import csv
                 cursor.execute("select * from " + DB_table_name + ";")
-                csv_name = 'C:\Attendance mgmt project\Attendance\Manually Attendance'+ DB_table_name +'.csv'
+                csv_name = str(ATTENDANCE_DIR / f"Manually_Attendance_{DB_table_name}.csv")
                 
                 with open(csv_name, "w") as csv_file:
                     csv_writer = csv.writer(csv_file)
@@ -223,8 +256,8 @@ def manually_fill():
 
             def attf():
                 import subprocess
-                subprocess.Popen(
-                    r'explorer /select,"C:\Attendance mgmt project\Attendance\Manually Attendance\-------Check atttendance-------"')
+                abs_path = ATTENDANCE_DIR
+                subprocess.Popen(r'explorer "' + str(abs_path) + '"')
 
             attf = tk.Button(MFW,  text="Check Sheets", command=attf, fg="white", bg="black",
                              width=12, height=1, activebackground="white", font=('times', 14, ' bold '))
@@ -306,8 +339,7 @@ def take_img():
     else:
         try:
             cam = cv2.VideoCapture(0)
-            detector = cv2.CascadeClassifier(
-                'haarcascade_frontalface_default.xml')
+            detector = cv2.CascadeClassifier(str(CASCADE_PATH))
             Enrollment = txt.get()
             Name = txt2.get()
             sampleNum = 0
@@ -320,8 +352,7 @@ def take_img():
                     # incrementing sample number
                     sampleNum = sampleNum + 1
                     # saving the captured face in the dataset folder
-                    cv2.imwrite("TrainingImage/ " + Name + "." + Enrollment + '.' + str(sampleNum) + ".jpg",
-                                gray)
+                    cv2.imwrite(str(TRAINING_DIR / f"{Name}.{Enrollment}.{sampleNum}.jpg"), gray)
                     print("Images Saved for Enrollment :")
                     cv2.imshow('Frame', img)
                 # wait for 100 miliseconds
@@ -365,16 +396,16 @@ def subjectchoose():
             else:
                 recognizer = cv2.face.LBPHFaceRecognizer_create()  # cv2.createLBPHFaceRecognizer()
                 try:
-                    recognizer.read("TrainingImageLabel\Trainner.yml")
+                    recognizer.read(str(MODEL_PATH))
                 except:
                     e = 'Model not found,Please train model'
                     Notifica.configure(
                         text=e, bg="red", fg="black", width=33, font=('times', 15, 'bold'))
                     Notifica.place(x=20, y=250)
 
-                harcascadePath = "haarcascade_frontalface_default.xml"
+                harcascadePath = str(CASCADE_PATH)
                 faceCascade = cv2.CascadeClassifier(harcascadePath)
-                df = pd.read_csv("C:\Attendance mgmt project\StudentDetails.csv")
+                df = pd.read_csv(str(STUDENT_CSV))
                 cam = cv2.VideoCapture(0)
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 col_names = ['Enrollment', 'Name', 'Date', 'Time']
@@ -432,8 +463,7 @@ def subjectchoose():
                 timeStamp = datetime.datetime.fromtimestamp(
                     ts).strftime('%H:%M:%S')
                 Hour, Minute, Second = timeStamp.split(":")
-                fileName = "Attendance/" + Subject + "_" + date + \
-                    "_" + Hour + "-" + Minute + "-" + Second + ".csv"
+                fileName = str(ATTENDANCE_DIR / f"{Subject}_{date}_{Hour}-{Minute}-{Second}.csv")
                 attendance = attendance.drop_duplicates(
                     ['Enrollment'], keep='first')
                 print(attendance)
@@ -488,7 +518,7 @@ def subjectchoose():
                 root = tkinter.Tk()
                 root.title("Attendance of " + Subject)
                 root.configure(background='grey80')
-                cs = 'C:\Attendance mgmt project' + fileName
+                cs = fileName
                 with open(cs, newline="") as file:
                     reader = csv.reader(file)
                     r = 0
@@ -516,8 +546,8 @@ def subjectchoose():
 
     def Attf():
         import subprocess
-        subprocess.Popen(
-            r'explorer /select,"C:\Attendance mgmt project\Attendance\-------Check atttendance-------"')
+        abs_path = ATTENDANCE_DIR
+        subprocess.Popen(r'explorer "' + str(abs_path) + '"')
 
     attf = tk.Button(windo,  text="Check Sheets", command=Attf, fg="white", bg="black",
                      width=12, height=1, activebackground="white", font=('times', 14, ' bold '))
@@ -548,8 +578,9 @@ def admin_panel():
         username = un_entr.get()
         password = pw_entr.get()
 
-        if username == 'pujitha':
-            if password == 'pujitha123':
+        # Admin Credentials - Change username and password below
+        if username == 'Heeralal':
+            if password == 'Heera@1234':
                 win.destroy()
                 import csv
                 import tkinter
@@ -557,7 +588,7 @@ def admin_panel():
                 root.title("Student Details")
                 root.configure(background='grey80')
 
-                cs = "C:\Attendance mgmt project\StudentDetails.csv"
+                cs = str(STUDENT_CSV)
                 with open(cs, newline="") as file:
                     reader = csv.reader(file)
                     r = 0
@@ -629,10 +660,10 @@ def admin_panel():
 def trainimg():
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     global detector
-    detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    detector = cv2.CascadeClassifier(str(CASCADE_PATH))
     try:
         global faces, Id
-        faces, Id = getImagesAndLabels("TrainingImage")
+        faces, Id = getImagesAndLabels(str(TRAINING_DIR))
     except Exception as e:
         l = 'please make "TrainingImage" folder & put Images'
         Notification.configure(text=l, bg="SpringGreen3",
@@ -641,7 +672,7 @@ def trainimg():
 
     recognizer.train(faces, np.array(Id))
     try:
-        recognizer.save("TrainingImageLabel\Trainner.yml")
+        recognizer.save(str(MODEL_PATH))
     except Exception as e:
         q = 'Please make "TrainingImageLabel" folder'
         Notification.configure(text=q, bg="SpringGreen3",
@@ -691,65 +722,94 @@ def on_closing():
 
 window.protocol("WM_DELETE_WINDOW", on_closing)
 
-message = tk.Label(window, text="Attendance Management System using Face Recognition", bg="black", fg="white", width=50,
-                   height=3, font=('times', 30, ' bold '))
+# Header Frame
+header_frame = tk.Frame(window, bg='#2c5f8d', height=120)
+header_frame.pack(fill='x')
 
-message.place(x=80, y=20)
+message = tk.Label(header_frame, text="🎓 ATTENDANCE MANAGEMENT SYSTEM", 
+                   bg="#2c5f8d", fg="white", 
+                   font=('Arial', 36, 'bold'), pady=20)
+message.pack()
 
-Notification = tk.Label(window, text="All things good", bg="Green", fg="white", width=15,
-                        height=3, font=('times', 17))
+sub_message = tk.Label(header_frame, text="Powered by Face Recognition Technology", 
+                       bg="#2c5f8d", fg="#a8d5ff", 
+                       font=('Arial', 14, 'italic'))
+sub_message.pack()
 
-lbl = tk.Label(window, text="Enter Enrollment : ", width=20, height=2,
-               fg="black", bg="grey", font=('times', 15, 'bold'))
-lbl.place(x=200, y=200)
+Notification = tk.Label(window, text="✓ System Ready", bg="#28a745", fg="white", width=40,
+                        height=2, font=('Arial', 14, 'bold'), relief='flat')
+
+# Input Section Frame
+input_frame = tk.Frame(window, bg='#1e3a5f')
+input_frame.pack(pady=30)
+
+lbl = tk.Label(input_frame, text="📋 Enrollment ID:", width=18, height=2,
+               fg="white", bg="#2c5f8d", font=('Arial', 14, 'bold'), relief='ridge', bd=2)
+lbl.grid(row=0, column=0, padx=10, pady=10)
 
 
 def testVal(inStr, acttyp):
-    if acttyp == '1':  # insert
-        if not inStr.isdigit():
-            return False
-    return True
+    return is_digit_input(inStr, acttyp)
 
 
-txt = tk.Entry(window, validate="key", width=20, bg="white",
-               fg="black", font=('times', 25))
+txt = tk.Entry(input_frame, validate="key", width=25, bg="white",
+               fg="#2c5f8d", font=('Arial', 18), relief='solid', bd=2)
 txt['validatecommand'] = (txt.register(testVal), '%P', '%d')
-txt.place(x=550, y=210)
+txt.grid(row=0, column=1, padx=10, pady=10)
 
-lbl2 = tk.Label(window, text="Enter Name : ", width=20, fg="black",
-                bg="grey", height=2, font=('times', 15, ' bold '))
-lbl2.place(x=200, y=300)
+lbl2 = tk.Label(input_frame, text="👤 Student Name:", width=18, fg="white",
+                bg="#2c5f8d", height=2, font=('Arial', 14, 'bold'), relief='ridge', bd=2)
+lbl2.grid(row=1, column=0, padx=10, pady=10)
 
-txt2 = tk.Entry(window, width=20, bg="white",
-                fg="black", font=('times', 25))
-txt2.place(x=550, y=310)
+txt2 = tk.Entry(input_frame, width=25, bg="white",
+                fg="#2c5f8d", font=('Arial', 18), relief='solid', bd=2)
+txt2.grid(row=1, column=1, padx=10, pady=10)
 
-clearButton = tk.Button(window, text="Clear", command=clear, fg="white", bg="black",
-                        width=10, height=1, activebackground="white", font=('times', 15, ' bold '))
-clearButton.place(x=950, y=210)
+clearButton = tk.Button(input_frame, text="🗑️ Clear", command=clear, fg="white", bg="#dc3545",
+                        width=12, height=1, activebackground="#c82333", font=('Arial', 12, 'bold'),
+                        relief='raised', bd=3, cursor='hand2')
+clearButton.grid(row=0, column=2, padx=10, pady=10)
 
-clearButton1 = tk.Button(window, text="Clear", command=clear1, fg="white", bg="black",
-                         width=10, height=1, activebackground="white", font=('times', 15, ' bold '))
-clearButton1.place(x=950, y=310)
+clearButton1 = tk.Button(input_frame, text="🗑️ Clear", command=clear1, fg="white", bg="#dc3545",
+                         width=12, height=1, activebackground="#c82333", font=('Arial', 12, 'bold'),
+                         relief='raised', bd=3, cursor='hand2')
+clearButton1.grid(row=1, column=2, padx=10, pady=10)
 
-AP = tk.Button(window, text="Check Registered students", command=admin_panel, fg="black",
-               bg="SkyBlue1", width=19, height=1, activebackground="white", font=('times', 15, ' bold '))
-AP.place(x=990, y=410)
+# Button Panel Frame
+button_frame = tk.Frame(window, bg='#1e3a5f')
+button_frame.pack(pady=40)
 
-takeImg = tk.Button(window, text="Take Images", command=take_img, fg="black", bg="SkyBlue1",
-                    width=20, height=3, activebackground="white", font=('times', 15, ' bold '))
-takeImg.place(x=90, y=500)
+# Row 1 - Main Action Buttons
+row1_frame = tk.Frame(button_frame, bg='#1e3a5f')
+row1_frame.pack(pady=10)
 
-trainImg = tk.Button(window, text="Train Images", fg="black", command=trainimg, bg="SkyBlue1",
-                     width=20, height=3, activebackground="white", font=('times', 15, ' bold '))
-trainImg.place(x=390, y=500)
+takeImg = tk.Button(row1_frame, text="📸 CAPTURE IMAGES", command=take_img, fg="white", bg="#17a2b8",
+                    width=22, height=3, activebackground="#138496", font=('Arial', 13, 'bold'),
+                    relief='raised', bd=4, cursor='hand2')
+takeImg.grid(row=0, column=0, padx=15, pady=10)
 
-FA = tk.Button(window, text="Automatic Attendance", fg="black", command=subjectchoose,
-               bg="SkyBlue1", width=20, height=3, activebackground="white", font=('times', 15, ' bold '))
-FA.place(x=690, y=500)
+trainImg = tk.Button(row1_frame, text="🧠 TRAIN MODEL", fg="white", command=trainimg, bg="#6f42c1",
+                     width=22, height=3, activebackground="#5a32a3", font=('Arial', 13, 'bold'),
+                     relief='raised', bd=4, cursor='hand2')
+trainImg.grid(row=0, column=1, padx=15, pady=10)
 
-quitWindow = tk.Button(window, text="Manually Fill Attendance", command=manually_fill, fg="black",
-                       bg="SkyBlue1", width=20, height=3, activebackground="white", font=('times', 15, ' bold '))
-quitWindow.place(x=990, y=500)
+FA = tk.Button(row1_frame, text="✅ AUTO ATTENDANCE", fg="white", command=subjectchoose,
+               bg="#28a745", width=22, height=3, activebackground="#218838", font=('Arial', 13, 'bold'),
+               relief='raised', bd=4, cursor='hand2')
+FA.grid(row=0, column=2, padx=15, pady=10)
+
+# Row 2 - Secondary Buttons
+row2_frame = tk.Frame(button_frame, bg='#1e3a5f')
+row2_frame.pack(pady=10)
+
+quitWindow = tk.Button(row2_frame, text="📝 MANUAL ATTENDANCE", command=manually_fill, fg="white",
+                       bg="#fd7e14", width=22, height=3, activebackground="#e8590c", font=('Arial', 13, 'bold'),
+                       relief='raised', bd=4, cursor='hand2')
+quitWindow.grid(row=0, column=0, padx=15, pady=10)
+
+AP = tk.Button(row2_frame, text="👥 VIEW STUDENTS", command=lambda: admin_panel_component(window), fg="white",
+               bg="#20c997", width=22, height=3, activebackground="#1aa179", font=('Arial', 13, 'bold'),
+               relief='raised', bd=4, cursor='hand2')
+AP.grid(row=0, column=1, padx=15, pady=10)
 
 window.mainloop()
