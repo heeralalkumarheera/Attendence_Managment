@@ -96,7 +96,16 @@ def mark_auto_attendance(master: Optional[tk.Tk] = None, subject: str = "Class")
                 status_label.config(bg="#dc3545")
                 return
 
+            students_df['Enrollment'] = students_df['Enrollment'].astype(str)
             enrollment_to_name = dict(zip(students_df['Enrollment'], students_df['Name']))
+            
+            # Also create mapping without leading zeros for compatibility
+            for enr, name in list(enrollment_to_name.items()):
+                # Add version without leading zeros
+                enrollment_to_name[str(int(enr))] = name
+            
+            status_var.set(f"✅ Loaded {len(students_df)} students. Ready!")
+            win.update()
 
             engine = FaceEngine()
             if not engine.model_loaded:
@@ -109,52 +118,106 @@ def mark_auto_attendance(master: Optional[tk.Tk] = None, subject: str = "Class")
             win.update()
 
             cap = cv2.VideoCapture(0)
-            marked_students: Set[int] = set()
+            # Set camera resolution for better display
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
+            
+            marked_students: Set[str] = set()
             attendance_data = []
             session_start = datetime.now()
+            confirmations = {}
+            confidence_threshold = 50.0
             
             # Cooldown tracking for duplicate prevention
             last_marked = {}  # enrollment_id -> timestamp
+            thank_you_display_until = [0]  # Timestamp until which to display thank you
 
             while running[0]:
                 ret, frame = cap.read()
                 if not ret:
                     break
 
-                faces = engine.detect_faces(frame)
-                for x, y, w, h in faces:
-                    enrollment_id, confidence = engine.recognize_face(frame, x, y, w, h)
+                # Check if we're in thank-you display mode
+                current_time = cv2.getTickCount() / cv2.getTickFrequency()
+                
+                if current_time < thank_you_display_until[0]:
+                    # Display thank-you message on camera feed
+                    overlay = frame.copy()
+                    banner_height = int(frame.shape[0] * 0.25)
+                    y_start = frame.shape[0] - banner_height
+                    cv2.rectangle(overlay, (0, y_start), (frame.shape[1], frame.shape[0]), (0, 200, 0), -1)
+                    cv2.addWeighted(overlay, 0.4, frame, 0.6, 0, frame)
                     
-                    if confidence < 70:  # Match threshold
-                        name = enrollment_to_name.get(enrollment_id, f"ID-{enrollment_id}")
+                    # Get the last marked student name
+                    if attendance_data:
+                        last_name = attendance_data[-1]['Name']
+                        thank_you_text = f"Thank You, {last_name}!"
                         
-                        # Only mark once with cooldown period
-                        current_time = datetime.now()
-                        if enrollment_id not in marked_students:
-                            marked_students.add(enrollment_id)
-                            now = datetime.now()
-                            time_str = now.strftime("%H:%M:%S")
-                            attendance_data.append({
-                                'Enrollment': enrollment_id,
-                                'Name': name,
-                                'Date': now.strftime("%Y-%m-%d"),
-                                'Time': time_str
-                            })
-                            
-                            log_info(f"Marked: {name} ({enrollment_id})")
-                            count_var.set(f"Students Marked: {len(marked_students)}")
-                            update_marked_list(attendance_data)
-                            
-                            # Show thank you message (non-blocking with auto-restart)
-                            show_thank_you(name, enrollment_id)
+                        # Calculate text size for responsive positioning
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        font_scale = min(frame.shape[1] / 400, 3.0)  # Responsive font size
+                        thickness = max(int(font_scale * 2), 3)
+                        (text_width, text_height), _ = cv2.getTextSize(thank_you_text, font, font_scale, thickness)
                         
-                        color = (0, 255, 0)  # Green
-                    else:
-                        name = "Unknown"
-                        color = (0, 0, 255)  # Red
+                        x = (frame.shape[1] - text_width) // 2
+                        y = frame.shape[0] - banner_height // 2 + text_height // 2
+                        
+                        # Draw text with shadow
+                        cv2.putText(frame, thank_you_text, (x+4, y+4), font, font_scale, (0, 0, 0), thickness+2)
+                        cv2.putText(frame, thank_you_text, (x, y), font, font_scale, (255, 255, 255), thickness)
+                else:
+                    # Normal face detection mode
+                    faces = engine.detect_faces(frame)
+                    seen_ids = set()
+                    for x, y, w, h in faces:
+                        enrollment_id, confidence = engine.recognize_face(frame, x, y, w, h)
+                        
+                        enrollment_id_str = str(enrollment_id)
+                        name = enrollment_to_name.get(enrollment_id_str, "Unknown")
 
-                    engine.draw_detection(frame, x, y, w, h, f"{name} ({confidence:.1f})", color)
+                        if confidence < confidence_threshold and name != "Unknown":
+                            seen_ids.add(enrollment_id_str)
+                            confirmations[enrollment_id_str] = confirmations.get(enrollment_id_str, 0) + 1
 
+                            # Only mark after a few confirmations
+                            if confirmations[enrollment_id_str] >= 3 and enrollment_id_str not in marked_students:
+                                marked_students.add(enrollment_id_str)
+                                now = datetime.now()
+                                time_str = now.strftime("%H:%M:%S")
+                                attendance_data.append({
+                                    'Enrollment': enrollment_id_str,
+                                    'Name': name,
+                                    'Date': now.strftime("%Y-%m-%d"),
+                                    'Time': time_str
+                                })
+
+                                log_info(f"Marked: {name} ({enrollment_id_str})")
+                                count_var.set(f"Students Marked: {len(marked_students)}")
+                                update_marked_list(attendance_data)
+
+                                # Show thank you message (non-blocking with auto-restart)
+                                show_thank_you(name, enrollment_id_str)
+
+                                # Set timer for camera feed thank-you display (2.5 seconds)
+                                thank_you_display_until[0] = cv2.getTickCount() / cv2.getTickFrequency() + 2.5
+
+                                confirmations[enrollment_id_str] = 0
+
+                            color = (0, 255, 0)  # Green
+                        else:
+                            confirmations[enrollment_id_str] = 0
+                            name = "Unknown"
+                            color = (0, 0, 255)  # Red
+
+                        engine.draw_detection(frame, x, y, w, h, f"{name} ({confidence:.1f})", color)
+
+                    for key in list(confirmations.keys()):
+                        if key not in seen_ids:
+                            confirmations[key] = 0
+
+                # Resize window for better visibility
+                cv2.namedWindow(f"Auto Attendance - {subject} (Press Q to end)", cv2.WINDOW_NORMAL)
+                cv2.resizeWindow(f"Auto Attendance - {subject} (Press Q to end)", 960, 540)
                 cv2.imshow(f"Auto Attendance - {subject} (Press Q to end)", frame)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q'):

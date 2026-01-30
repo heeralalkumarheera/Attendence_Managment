@@ -9,7 +9,7 @@ import cv2
 
 from components.face_engine import FaceEngine
 from config import TRAINING_DIR
-from data.database_handler import append_student_row
+from data.database_handler import append_student_row, read_students
 from utils.logger import log_info, log_error
 import datetime
 import time
@@ -55,6 +55,16 @@ def register_student(master: Optional[tk.Tk] = None) -> None:
             status_label.config(bg="#dc3545")
             return
 
+        # Check if enrollment ID already exists
+        from data.database_handler import read_students
+        existing_students = read_students()
+        if not existing_students.empty:
+            existing_ids = existing_students['Enrollment'].astype(str).str.strip().tolist()
+            if enrollment in existing_ids:
+                status_var.set(f"❌ Enrollment ID '{enrollment}' already exists!")
+                status_label.config(bg="#dc3545")
+                return
+
         status_var.set("🎥 Initializing camera... Press Q to stop, auto-stops at 30 images")
         status_label.config(bg="#0d6efd")
         win.update()
@@ -90,11 +100,24 @@ def register_student(master: Optional[tk.Tk] = None) -> None:
             now = datetime.now()
             date_str = now.strftime("%Y-%m-%d")
             time_str = now.strftime("%H:%M:%S")
-            append_student_row([enrollment, name, date_str, time_str])
+            append_student_row({'Enrollment': enrollment, 'Name': name, 'Date': date_str, 'Time': time_str})
 
             log_info(f"Registered student: {name} ({enrollment}) - {sample_count} images captured")
-            status_var.set(f"✅ Registration complete! {sample_count} images captured.")
-            status_label.config(bg="#28a745")
+            status_var.set(f"✅ Registration complete! Training model...")
+            status_label.config(bg="#0d6efd")
+            win.update()
+            
+            # Automatically train the model after registration
+            try:
+                from components.model_training import train_model_background
+                train_model_background()
+                status_var.set(f"✅ Registration & Training complete! {sample_count} images captured.")
+                status_label.config(bg="#28a745")
+                log_info(f"Model trained successfully after registering {name}")
+            except Exception as train_error:
+                log_error(f"Model training error: {train_error}")
+                status_var.set(f"✅ Registration complete! Please train model manually.")
+                status_label.config(bg="#ffc107")
 
         except Exception as exc:
             log_error(f"Registration error: {exc}")
