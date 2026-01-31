@@ -1,0 +1,10 @@
+[2026-01-31T12:30:42] INFO: Dashboard launched
+[2026-01-31T12:31:07] INFO: Admin login: Heeralal
+[2026-01-31T12:34:24] INFO: Dashboard launched
+[2026-01-31T12:34:47] INFO: Admin login: Heeralal
+[2026-01-31T12:38:31] INFO: Dashboard launched
+[2026-01-31T12:39:35] INFO: Admin login: Heeralal
+[2026-01-31T12:39:53] INFO: Registered student: Heera (24) - 30 images captured
+[2026-01-31T12:40:09] INFO: Model trained successfully: 30 faces, 1 unique students
+[2026-01-31T12:40:39] INFO: Marked: ID-24 (24)
+[2026-01-31T12:40:49] INFO: Attendance saved: Hindi_2026-01-31_12-40-49.csv
