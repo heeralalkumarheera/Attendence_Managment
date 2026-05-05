@@ -113,7 +113,7 @@ class EnhancedDashboard(tk.Tk):
         
         # Treeview for students with better columns
         columns = ("Enrollment", "Name", "Date", "Time")
-        tree = tk.ttk.Treeview(content, columns=columns, height=15, show="headings")
+        tree = ttk.Treeview(content, columns=columns, height=15, show="headings")
         
         tree.column("Enrollment", width=120, anchor="center", stretch=True)
         tree.column("Name", width=300, anchor="w", stretch=True)
@@ -126,7 +126,7 @@ class EnhancedDashboard(tk.Tk):
         tree.heading("Time", text="⏰ Registration Time")
         
         # Configure style for better appearance
-        style = tk.ttk.Style()
+        style = ttk.Style()
         style.theme_use('clam')
         style.configure("Treeview", background="#1a2a3f", foreground="white",
                        fieldbackground="#1a2a3f", font=("Arial", 10), rowheight=35, relief="flat")
@@ -139,11 +139,11 @@ class EnhancedDashboard(tk.Tk):
         tree_frame.pack(fill="both", expand=True, pady=(0, 15))
         
         # Vertical scrollbar
-        vsb = tk.ttk.Scrollbar(tree_frame, orient="vertical", command=tree.yview)
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=tree.yview)
         vsb.pack(side="right", fill="y")
         
         # Horizontal scrollbar
-        hsb = tk.ttk.Scrollbar(tree_frame, orient="horizontal", command=tree.xview)
+        hsb = ttk.Scrollbar(tree_frame, orient="horizontal", command=tree.xview)
         hsb.pack(side="bottom", fill="x")
         
         tree.configure(yscroll=vsb.set, xscroll=hsb.set)

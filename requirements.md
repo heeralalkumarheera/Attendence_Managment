@@ -188,7 +188,7 @@ python main.py
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| opencv-python | >= 4.5.0 | Face detection & recognition |
+| opencv-contrib-python | >= 4.5.0 | Face detection, recognition & LBPH face recognizer |
 | pandas | >= 1.0.0 | Data handling |
 | pillow | >= 7.0.0 | Image processing |
 | openpyxl | >= 3.0.0 | Excel file export |
@@ -283,7 +283,7 @@ python main.py
 ## Common Issues & Solutions
 
 ### Issue: "ModuleNotFoundError: No module named 'cv2'"
-**Solution**: Run `pip install opencv-python`
+**Solution**: Run `pip install opencv-contrib-python`
 
 ### Issue: "No module named 'tkinter'"
 **Solution**: Tkinter comes with Python. Reinstall Python with Tcl/Tk checked.

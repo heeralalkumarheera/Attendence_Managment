@@ -179,7 +179,7 @@ Password: Heera@1234
 
 ## 📖 Requirements
 
-See **requirement.md** for detailed technology requirements and dependencies.
+See **requirements.md** for detailed technology requirements and dependencies.
 
 ---
 

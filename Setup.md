@@ -22,11 +22,11 @@ Replace `<main-repo-link>` with your actual repository URL.
 ## Step 2: Install Required Libraries
 
 ```bash
-pip install opencv-python pandas pillow openpyxl
+pip install -r requirements.txt
 ```
 
 This installs:
-- **opencv-python** - Face detection & recognition
+- **opencv-contrib-python** - Face detection & recognition with LBPH support
 - **pandas** - Data handling & CSV files
 - **pillow** - Image processing
 - **openpyxl** - Excel file export & creation
